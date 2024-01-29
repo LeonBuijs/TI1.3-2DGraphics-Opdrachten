@@ -9,7 +9,7 @@ import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
 
 public class Rainbow extends Application {
-    Canvas canvas = new Canvas(1920, 1080);
+    private Canvas canvas = new Canvas(1920, 1080);
     @Override
     public void start(Stage primaryStage) throws Exception {
         draw(new FXGraphics2D(canvas.getGraphicsContext2D()));
