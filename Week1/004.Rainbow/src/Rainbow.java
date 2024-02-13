@@ -47,8 +47,6 @@ public class Rainbow extends Application {
             graphics.drawLine((int)(x5*scale), (int)(y5*scale), (int)(x6*scale), (int)(y6*scale));
             graphics.setColor(Color.getHSBColor(i/step, 1, 1));
         }
-
-
     }
     
     
