@@ -1,6 +1,7 @@
 
 import java.awt.*;
 import java.awt.geom.*;
+import java.io.IOException;
 import java.util.ArrayList;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -9,10 +10,15 @@ import javafx.scene.Scene;
 import javafx.scene.control.CheckBox;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.World;
+import org.dyn4j.geometry.Geometry;
+import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
 import org.jfree.fx.FXGraphics2D;
 import org.jfree.fx.ResizableCanvas;
+
+import javax.imageio.ImageIO;
 
 public class AngryBirds extends Application {
 
@@ -65,6 +71,23 @@ public class AngryBirds extends Application {
     public void init() {
         world = new World();
         world.setGravity(new Vector2(0, -9.8));
+
+        // Vloer
+        Body floor = new Body();
+        floor.addFixture(Geometry.createRectangle(20, 1));
+        floor.getTransform().setTranslation(0, -4.6);
+        floor.setMass(MassType.INFINITE);
+        world.addBody(floor);
+
+        // Bal
+        Body ball = new Body();
+        ball.addFixture(Geometry.createCircle(0.15));
+        ball.getTransform().setTranslation(0,2.4);
+        ball.setMass(MassType.NORMAL);
+        ball.getFixture(0).setRestitution(0.75);
+        world.addBody(ball);
+//        gameObjects.add(new GameObject("/images/basketball.png", ball, new Vector2(0,0), 0.05));
+
     }
 
     public void draw(FXGraphics2D graphics) {
@@ -73,9 +96,17 @@ public class AngryBirds extends Application {
         graphics.clearRect(0, 0, (int) canvas.getWidth(), (int) canvas.getHeight());
 
         AffineTransform originalTransform = graphics.getTransform();
+        try {
+            Image image = ImageIO.read(getClass().getResource("background.jpg"));
+            graphics.drawImage(image, 0,0, null);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         graphics.setTransform(camera.getTransform((int) canvas.getWidth(), (int) canvas.getHeight()));
         graphics.scale(1, -1);
+
+
 
         for (GameObject go : gameObjects) {
             go.draw(graphics);
