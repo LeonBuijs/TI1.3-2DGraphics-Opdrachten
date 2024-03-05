@@ -1,4 +1,6 @@
 import org.jfree.fx.FXGraphics2D;
+
+import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
@@ -41,6 +43,16 @@ public class DistanceConstraint implements Constraint {
 
     @Override
     public void draw(FXGraphics2D g2d) {
+        double currentDistancedif = a.getPosition().distance(b.getPosition()) - (this.distance - 5);
+
+        if (currentDistancedif >= 20){
+            g2d.setColor(Color.red);
+        } else if (currentDistancedif <= 1) {
+            g2d.setColor(Color.green);
+        } else {
+            g2d.setColor(Color.getHSBColor(((float) (0.4 - ((currentDistancedif)/ 3) / 20)), 1, 1));
+        }
+
         g2d.draw(new Line2D.Double(a.getPosition(), b.getPosition()));
     }
 }

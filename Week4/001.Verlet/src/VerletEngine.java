@@ -1,21 +1,31 @@
 
 import java.awt.*;
 import java.awt.geom.*;
+import java.io.*;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+
 import static javafx.application.Application.launch;
+
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
 import org.jfree.fx.ResizableCanvas;
 
 public class VerletEngine extends Application {
+
+    // Opdracht 5 snap ik niet
+    // Opdracht 6 opslaan niet gelukt
 
     private ResizableCanvas canvas;
     private ArrayList<Particle> particles = new ArrayList<>();
@@ -25,6 +35,40 @@ public class VerletEngine extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         BorderPane mainPane = new BorderPane();
+
+        Button buttonSave = new Button("Save");
+        buttonSave.setOnAction(event -> {
+            try {
+                FileOutputStream fos = new FileOutputStream("C:\\Users\\leonb\\IdeaProjects\\TI1.3-2DGraphics-Opdrachten\\Week4\\001.Verlet\\src\\SaveFile.ser");
+                ObjectOutputStream oos = new ObjectOutputStream(fos);
+                oos.writeObject(stage.getScene());
+                oos.close();
+            } catch (FileNotFoundException e) {
+                System.out.println("File niet gevonden");
+            } catch (IOException e){
+                System.out.println("Opslaan niet gelukt");
+            }
+        });
+        Button buttonLoad = new Button("Load");
+        buttonLoad.setOnAction(event -> {
+            FileInputStream fis = null;
+            try {
+                fis = new FileInputStream("C:\\Users\\leonb\\IdeaProjects\\TI1.3-2DGraphics-Opdrachten\\Week4\\001.Verlet\\src\\SaveFile.ser");
+                ObjectInputStream ois = new ObjectInputStream(fis);
+                stage.setScene((Scene) ois.readObject());
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+
+        });
+
+        HBox buttonBar = new HBox(buttonSave, buttonLoad);
+        mainPane.setTop(buttonBar);
+
         canvas = new ResizableCanvas(g -> draw(g), mainPane);
         mainPane.setCenter(canvas);
         FXGraphics2D g2d = new FXGraphics2D(canvas.getGraphicsContext2D());
@@ -55,7 +99,7 @@ public class VerletEngine extends Application {
     }
 
     public void init() {
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 11; i++) {
             particles.add(new Particle(new Point2D.Double(100 + 50 * i, 100)));
         }
 
@@ -95,8 +139,23 @@ public class VerletEngine extends Application {
         Point2D mousePosition = new Point2D.Double(e.getX(), e.getY());
         Particle nearest = getNearest(mousePosition);
         Particle newParticle = new Particle(mousePosition);
-        particles.add(newParticle);
-        constraints.add(new DistanceConstraint(newParticle, nearest));
+
+
+        if (!(e.getButton() == MouseButton.SECONDARY && e.isShiftDown())) {
+            if (mousePosition.distance(nearest.getPosition()) > 10) {
+                particles.add(newParticle);
+            }
+        }
+        if (e.isControlDown() && e.getButton() == MouseButton.SECONDARY) {
+            constraints.add(new DistanceConstraint(newParticle, nearest, 100));
+        } else if (e.isControlDown() && e.getButton() == MouseButton.PRIMARY) {
+            constraints.add(new PositionConstraint(newParticle));
+        } else if (e.getButton() == MouseButton.SECONDARY && e.isShiftDown()) {
+            // geen constraint toevoegen met de nieuwe particle
+        } else {
+            constraints.add(new DistanceConstraint(newParticle, nearest));
+        }
+
 
         if (e.getButton() == MouseButton.SECONDARY) {
             ArrayList<Particle> sorted = new ArrayList<>();
@@ -110,7 +169,14 @@ public class VerletEngine extends Application {
                 }
             });
 
-            constraints.add(new DistanceConstraint(newParticle, sorted.get(2)));
+            if (e.isControlDown()) {
+                constraints.add(new DistanceConstraint(newParticle, sorted.get(2), 100));
+            } else if (e.isShiftDown()) {
+                constraints.add(new DistanceConstraint(sorted.get(0), sorted.get(1)));
+            } else {
+                constraints.add(new DistanceConstraint(newParticle, sorted.get(2)));
+            }
+
         } else if (e.getButton() == MouseButton.MIDDLE) {
             // Reset
             particles.clear();
