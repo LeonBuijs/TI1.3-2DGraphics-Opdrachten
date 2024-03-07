@@ -1,4 +1,3 @@
-
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.input.MouseButton;
@@ -26,13 +25,13 @@ public class MousePicker {
     private MotorJoint joint;
 
     public MousePicker(Node node) {
-        EventHandler<? super MouseEvent> oldMouseClicked = node.getOnMouseClicked();
+        EventHandler<? super MouseEvent> oldMousePressed = node.getOnMousePressed();
         EventHandler<? super MouseEvent> oldMouseReleased = node.getOnMouseReleased();
         EventHandler<? super MouseEvent> oldMouseDragged = node.getOnMouseDragged();
 
-        node.setOnMouseClicked(e -> {
-            if (oldMouseClicked != null) {
-                oldMouseClicked.handle(e);
+        node.setOnMousePressed(e -> {
+            if (oldMousePressed != null) {
+                oldMousePressed.handle(e);
             }
             if (e.getButton() == MouseButton.PRIMARY) {
                 this.mousePos = new Point2D.Double(e.getX(), e.getY());
