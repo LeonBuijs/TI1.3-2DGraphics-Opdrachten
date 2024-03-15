@@ -64,10 +64,6 @@ public class BlockDrag extends Application {
                     e.getY() >= renderable.getPosition().getY() &&
                     e.getY() <= (renderable.getPosition().getY() + 50)) {
 
-                System.out.println(renderable.getPosition().getX() + ", " + renderable.getPosition().getY());
-                System.out.println(e.getX() + ", " + e.getY());
-                System.out.println(renderables.indexOf(renderable));
-
                 this.xDiff = (int) (e.getX() - renderable.getPosition().getX());
                 this.yDiff = (int) (e.getY() - renderable.getPosition().getY());
                 dragged = true;
