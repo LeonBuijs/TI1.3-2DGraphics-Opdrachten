@@ -107,6 +107,10 @@ public class Obstacle {
             closestDistance = line.ptLineDist(checkingPoint);
         }
 
+        if (closestCorner == null){
+            closestCorner = new Point2D.Double(line.getX2(), line.getY2());
+        }
+
         return closestCorner;
     }
 }

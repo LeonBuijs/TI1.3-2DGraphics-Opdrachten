@@ -22,12 +22,13 @@ public class Eindopdracht extends Application {
     private ArrayList<Obstacle> obstacles = new ArrayList<>();
     private ArrayList<Line2D> lines = new ArrayList<>();
     private Rectangle2D border;
+    private Area area = createArea();
 
     @Override
     public void init() {
         this.obstacles.add(new Obstacle(400, 100, 100, 100));
         this.obstacles.add(new Obstacle(400, 700, 100, 100));
-        this.obstacles.add(new Obstacle(700, 550, 100, 100));
+        this.obstacles.add(new Obstacle(700, 400, 100, 100));
     }
 
     @Override
@@ -103,6 +104,8 @@ public class Eindopdracht extends Application {
     private void update(double deltatime) {
         border = new Rectangle2D.Double(10, 10, canvas.getWidth() - 20, canvas.getHeight() - 20);
         corners.clear();
+        this.area = createArea();
+        lines.clear();
 
         corners.add(new Point2D.Double(10, 10));
         corners.add(new Point2D.Double(canvas.getWidth() - 10, 10));
@@ -132,7 +135,7 @@ public class Eindopdracht extends Application {
             g.draw(border);
         }
         g.setColor(Color.yellow);
-        g.fill(createArea());
+        g.fill(this.area);
 
         g.setColor(Color.gray);
         for (Obstacle obstacle : obstacles) {
@@ -201,16 +204,18 @@ public class Eindopdracht extends Application {
             return Double.compare(angleA, angleB);
         });
 
-            Area complete = new Area();
+        Area complete = new Area();
 
         for (int i = 0; i < lines.size(); i++) {
             Line2D currentLine = lines.get(i);
             Line2D nextLine;
-            if (i + 1 > lines.size() - 1) {
+
+            if (i + 1 >= lines.size()) {
                 nextLine = lines.get(0);
             } else {
                 nextLine = lines.get(i + 1);
             }
+
             GeneralPath path = new GeneralPath();
             path.moveTo(this.lightX + 25, this.lightY + 25);
             path.lineTo(currentLine.getX2(), currentLine.getY2());
@@ -220,8 +225,16 @@ public class Eindopdracht extends Application {
 
             Area area = new Area(path);
             for (Obstacle obstacle : obstacles) {
-                Rectangle2D.Double obstacleSmall = new Rectangle2D.Double(obstacle.getX() + 1, obstacle.getY() + 1, obstacle.getWidth() - 2, obstacle.getHeight() - 2);
-                if (area.intersects(obstacleSmall)) {
+                Rectangle2D.Double obstacleSmall = new Rectangle2D.Double(obstacle.getX() + 5, obstacle.getY() + 5, obstacle.getWidth() - 10, obstacle.getHeight() - 10);
+                boolean intersects = true;
+                try {
+                    intersects = area.intersects(obstacleSmall);
+                } catch (Exception e) {
+                    // Ik weet niet hoe je dit anders kunt oplossen
+                }
+
+
+                if (intersects) {
                     // Maak de area kleiner
                     path = new GeneralPath();
                     path.moveTo(this.lightX + 25, this.lightY + 25);
@@ -234,7 +247,12 @@ public class Eindopdracht extends Application {
                     area = new Area(path);
                 }
             }
-            complete.add(area);
+
+            try {
+                complete.add(area);
+            } catch (ClassCastException e){
+                // Ik weet niet hoe je dit anders kunt oplossen
+            }
         }
         return complete;
     }
