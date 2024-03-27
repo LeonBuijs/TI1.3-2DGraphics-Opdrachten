@@ -233,7 +233,6 @@ public class Eindopdracht extends Application {
                     // Ik weet niet hoe je dit anders kunt oplossen
                 }
 
-
                 if (intersects) {
                     // Maak de area kleiner
                     path = new GeneralPath();
@@ -244,6 +243,7 @@ public class Eindopdracht extends Application {
 
                     Point2D.Double point2 = obstacle.getClosestCorner(nextLine);
                     path.lineTo(point2.getX(), point2.getY());
+                    path.closePath();
                     area = new Area(path);
                 }
             }
