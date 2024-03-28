@@ -102,15 +102,14 @@ public class Eindopdracht extends Application {
     }
 
     private void update(double deltatime) {
-        border = new Rectangle2D.Double(10, 10, canvas.getWidth() - 20, canvas.getHeight() - 20);
         corners.clear();
         this.area = createArea();
         lines.clear();
 
-        corners.add(new Point2D.Double(10, 10));
-        corners.add(new Point2D.Double(canvas.getWidth() - 10, 10));
-        corners.add(new Point2D.Double(10, canvas.getHeight() - 10));
-        corners.add(new Point2D.Double(canvas.getWidth() - 10, canvas.getHeight() - 10));
+        corners.add(new Point2D.Double(0, 0));
+        corners.add(new Point2D.Double(canvas.getWidth(), 0));
+        corners.add(new Point2D.Double(0, canvas.getHeight()));
+        corners.add(new Point2D.Double(canvas.getWidth(), canvas.getHeight()));
 
         for (Obstacle obstacle : obstacles) {
             corners.add(new Point2D.Double(obstacle.getX(), obstacle.getY()));
@@ -125,17 +124,18 @@ public class Eindopdracht extends Application {
     private void draw(FXGraphics2D g) {
         // Clear screen
         g.setTransform(new AffineTransform());
-        g.setBackground(Color.white);
+        g.setBackground(Color.black);
         g.clearRect(0, 0, (int) canvas.getWidth(), (int) canvas.getHeight());
 
-        g.setColor(Color.yellow);
-        g.fill(new Ellipse2D.Double(this.lightX, this.lightY, 50, 50));
-        g.setColor(Color.black);
-        if (border != null) {
-            g.draw(border);
-        }
-        g.setColor(Color.yellow);
+        float[] fractions = {0.1f, 0.7f};
+        Color[] colors = {Color.getHSBColor((float) 43/255,1,(float) 0.85), Color.black};
+
+        RadialGradientPaint paint = new RadialGradientPaint(new Point2D.Double(this.lightX + 25, this.lightY + 25), (int)canvas.getWidth(), fractions, colors);
+        g.setPaint(paint);
         g.fill(this.area);
+
+        g.setColor(Color.yellow);;
+        g.fill(new Ellipse2D.Double(this.lightX, this.lightY, 50, 50));
 
         g.setColor(Color.gray);
         for (Obstacle obstacle : obstacles) {
@@ -154,7 +154,7 @@ public class Eindopdracht extends Application {
             }
             if (drawLine) {
                 line = extendLine(line);
-                g.draw(line);
+//                g.draw(line);
                 lines.add(line);
             }
 
@@ -182,7 +182,7 @@ public class Eindopdracht extends Application {
         }
 
 
-        while (line.getX2() > 10 && line.getX2() < canvas.getWidth() - 10 && line.getY2() > 10 && line.getY2() < canvas.getHeight() - 10) {
+        while (line.getX2() > 0 && line.getX2() < canvas.getWidth() && line.getY2() > 0 && line.getY2() < canvas.getHeight()) {
             // Lijn verlengen
             line = new Line2D.Double(this.lightX + 25, this.lightY + 25, line.getX2() + xDiff, line.getY2() + (xDiff * rc));
         }
