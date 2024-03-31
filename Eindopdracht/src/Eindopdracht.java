@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import org.jfree.fx.FXGraphics2D;
 import org.jfree.fx.ResizableCanvas;
@@ -76,6 +77,30 @@ public class Eindopdracht extends Application {
             }
         });
 
+
+        javafx.scene.control.TextField width = new javafx.scene.control.TextField("Width");
+        javafx.scene.control.TextField height = new javafx.scene.control.TextField("Height");
+        javafx.scene.control.Button create = new javafx.scene.control.Button("Create Block");
+        javafx.scene.control.Button reset = new javafx.scene.control.Button("Reset");
+        create.setOnAction(event -> {
+            try {
+                if (Integer.parseInt(width.getText()) >= 15 && Integer.parseInt(height.getText()) >= 15) {
+                    obstacles.add(new Obstacle(10, 10, Integer.parseInt(width.getText()), Integer.parseInt(height.getText())));
+                } else {
+                    System.out.println("Afmetingen zijn te klein");
+                }
+            } catch (NumberFormatException e){
+                System.out.println("Vul een getal in!");
+            }
+        });
+        reset.setOnAction(event -> {
+            obstacles.clear();
+            this.obstacles.add(new Obstacle(400, 100, 100, 100));
+            this.obstacles.add(new Obstacle(400, 700, 100, 100));
+            this.obstacles.add(new Obstacle(700, 400, 100, 100));
+        });
+        mainPane.setTop(new HBox(width, height, create, reset));
+
         mainPane.setCenter(canvas);
         FXGraphics2D g2d = new FXGraphics2D(canvas.getGraphicsContext2D());
         new AnimationTimer() {
@@ -103,8 +128,6 @@ public class Eindopdracht extends Application {
 
     private void update(double deltatime) {
         corners.clear();
-        this.area = createArea();
-        lines.clear();
 
         corners.add(new Point2D.Double(0, 0));
         corners.add(new Point2D.Double(canvas.getWidth(), 0));
@@ -117,8 +140,25 @@ public class Eindopdracht extends Application {
             corners.add(new Point2D.Double(obstacle.getX(), obstacle.getY() + obstacle.getHeight()));
             corners.add(new Point2D.Double(obstacle.getX() + obstacle.getWidth(), obstacle.getY() + obstacle.getHeight()));
         }
+        lines.clear();
 
+        Line2D.Double line = null;
+        for (Point2D corner : corners) {
+            line = new Line2D.Double(corner.getX(), corner.getY(), this.lightX + 25, this.lightY + 25);
+            line = extendLine(line);
 
+            boolean addLine = true;
+            for (Obstacle obstacle : obstacles) {
+                if (isLineIntersectingSquare(line, obstacle)) {
+                    addLine = false;
+                }
+            }
+            if (addLine){
+                lines.add(line);
+            }
+        }
+
+        this.area = createArea();
     }
 
     private void draw(FXGraphics2D g) {
@@ -128,36 +168,18 @@ public class Eindopdracht extends Application {
         g.clearRect(0, 0, (int) canvas.getWidth(), (int) canvas.getHeight());
 
         float[] fractions = {0.1f, 0.7f};
-        Color[] colors = {Color.getHSBColor((float) 43/255,1,(float) 0.85), Color.black};
+        Color[] colors = {Color.getHSBColor((float) 43 / 255, 1, (float) 0.85), Color.black};
 
-        RadialGradientPaint paint = new RadialGradientPaint(new Point2D.Double(this.lightX + 25, this.lightY + 25), (int)canvas.getWidth(), fractions, colors);
+        RadialGradientPaint paint = new RadialGradientPaint(new Point2D.Double(this.lightX + 25, this.lightY + 25), (int) canvas.getWidth(), fractions, colors);
         g.setPaint(paint);
         g.fill(this.area);
 
-        g.setColor(Color.yellow);;
+        g.setColor(Color.yellow);
         g.fill(new Ellipse2D.Double(this.lightX, this.lightY, 50, 50));
 
         g.setColor(Color.gray);
         for (Obstacle obstacle : obstacles) {
             g.fill(obstacle.getRectangle());
-        }
-
-
-        Line2D.Double line = null;
-        for (Point2D corner : corners) {
-            line = new Line2D.Double(corner.getX(), corner.getY(), this.lightX + 25, this.lightY + 25);
-
-            boolean drawLine = true;
-            for (Obstacle obstacle : obstacles) {
-                if (isLineIntersectingSquare(line, obstacle))
-                    drawLine = false;
-            }
-            if (drawLine) {
-                line = extendLine(line);
-//                g.draw(line);
-                lines.add(line);
-            }
-
         }
     }
 
@@ -244,13 +266,15 @@ public class Eindopdracht extends Application {
                     Point2D.Double point2 = obstacle.getClosestCorner(nextLine);
                     path.lineTo(point2.getX(), point2.getY());
                     path.closePath();
+
                     area = new Area(path);
                 }
             }
 
             try {
                 complete.add(area);
-            } catch (ClassCastException e){
+
+            } catch (ClassCastException e) {
                 // Ik weet niet hoe je dit anders kunt oplossen
             }
         }
